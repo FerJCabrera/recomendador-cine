@@ -38,6 +38,12 @@ h1 em{font-style:italic;color:var(--gold);font-weight:500}
 .bulbs span:nth-child(2){animation-delay:.3s}.bulbs span:nth-child(3){animation-delay:.6s}.bulbs span:nth-child(4){animation-delay:.9s}
 .bulbs span:nth-child(5){animation-delay:1.2s}.bulbs span:nth-child(6){animation-delay:1.5s}.bulbs span:nth-child(7){animation-delay:1.8s}
 @keyframes blink{0%,100%{opacity:.22}50%{opacity:1}}
+header.hero{position:relative;overflow:hidden;border-radius:22px;margin-top:16px;min-height:470px;display:flex;align-items:flex-end;padding:46px 44px;background:transparent;border:1px solid var(--line);box-shadow:var(--shadow)}
+.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.hero-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(0deg,rgba(8,6,5,.95),rgba(8,6,5,.68) 34%,rgba(8,6,5,.3) 64%,rgba(8,6,5,.08) 100%),linear-gradient(100deg,rgba(8,6,5,.8),rgba(8,6,5,.32) 46%,transparent 74%)}
+.hero-content{position:relative;z-index:2;max-width:640px}
+header.hero .lead{color:rgba(244,236,224,.84)}
+@media(max-width:600px){header.hero{min-height:400px;padding:30px 22px}}
 
 /* section heading */
 .shead{display:flex;align-items:baseline;gap:14px;margin:0 0 8px}
@@ -124,6 +130,21 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .chartbox .csub{font-size:.82rem;color:var(--faint);margin-bottom:16px}
 .cwrap{position:relative;height:300px}
 .cwrap.tall{height:380px}
+/* Análisis cultural (acordeón) */
+.analysis{margin-top:34px}
+.acc{border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--surface),var(--bg2));margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+.acc[open]{border-color:var(--line-strong)}
+.acc summary{list-style:none;cursor:pointer;padding:17px 22px;display:flex;align-items:center;gap:16px;font-family:var(--serif);font-size:1.12rem;font-weight:600;color:var(--text);transition:color .2s}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .n{font-style:italic;color:var(--gold);font-size:.95rem;min-width:2ch;flex:none}
+.acc summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(45deg);margin-left:auto;transition:transform .25s;flex:none}
+.acc[open] summary::after{transform:rotate(-135deg)}
+.acc summary:hover{color:var(--gold)}
+.acc .ab{padding:0 24px 20px 52px;color:var(--muted);font-size:.95rem;line-height:1.7}
+.analysis-concl{margin-top:18px;padding:22px 26px;border-left:3px solid var(--gold);background:linear-gradient(90deg,rgba(232,184,75,.07),transparent);border-radius:0 14px 14px 0}
+.analysis-concl .lab{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:10px}
+.analysis-concl p{font-family:var(--serif);font-size:1.12rem;line-height:1.55;color:var(--text);font-style:italic}
+@media(max-width:600px){.acc .ab{padding-left:24px}}
 
 /* RESPONDENT RECO */
 .resp-pick{background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:22px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -155,12 +176,79 @@ footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--l
 <body>
 <div class="wrap">
 
-  <header>
-    <div class="overline">Base de datos · 200 películas · encuesta del equipo</div>
-    <h1>¿Qué <em>veo</em><br>esta noche?</h1>
-    <p class="lead">Un recomendador de cine sobre <b>200 títulos seleccionados</b>, más los <b>resultados de la encuesta</b> del equipo y recomendaciones personalizadas para quienes la respondieron.</p>
-    <div class="bulbs"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <header class="hero">
+    <img class="hero-bg" src="hero.jpg" alt="" loading="lazy" onerror="this.remove()">
+    <div class="hero-scrim"></div>
+    <div class="hero-content">
+      <div class="overline">30 películas comentadas · 200 para elegir</div>
+      <h1>¿Qué <em>veo</em><br>esta noche?</h1>
+      <p class="lead">¿No sabes qué ver? Aquí lo eliges en segundos. Te mostramos lo que reveló <b>una encuesta a 26 personas</b> sobre <b>30 películas</b> muy comentadas y, para que no te quedes sin ver algo bueno <b>ni una noche</b>, un recomendador con una <b>selección de 200 títulos</b>. Dinos qué te apetece y elegimos por ti.</p>
+      <div class="bulbs"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
   </header>
+
+  <!-- RESULTADOS DE LA ENCUESTA -->
+  <section aria-label="Resultados de la encuesta">
+    <div class="shead"><span class="kicker">Lo que dice la gente</span></div>
+    <h2 class="section-title">Lo que reveló una encuesta</h2>
+    <p class="section-sub">Una encuesta a <b id="nResp">—</b> personas sobre 30 películas muy comentadas reveló cuáles enamoran, qué géneros mandan y dónde ve streaming la gente.</p>
+    <div class="stats" id="stats"></div>
+    <div class="charts">
+      <div class="chartbox wide"><h4>Las mejor valoradas</h4><div class="csub">Promedio de quienes sí la vieron (mín. 5 votos)</div><div class="cwrap tall"><canvas id="chTop"></canvas></div></div>
+      <div class="chartbox"><h4>Géneros favoritos</h4><div class="csub">Menciones entre las personas encuestadas</div><div class="cwrap"><canvas id="chGen"></canvas></div></div>
+      <div class="chartbox"><h4>Plataformas favoritas</h4><div class="csub">Dónde ven streaming</div><div class="cwrap"><canvas id="chPlat"></canvas></div></div>
+      <div class="chartbox"><h4>Edad de las personas encuestadas</h4><div class="csub">Distribución por rango</div><div class="cwrap"><canvas id="chAge"></canvas></div></div>
+      <div class="chartbox"><h4>Frecuencia de streaming</h4><div class="csub">Con qué asiduidad ven contenido</div><div class="cwrap"><canvas id="chFreq"></canvas></div></div>
+    </div>
+
+    <div class="analysis">
+      <div class="shead" style="margin-top:6px"><span class="kicker">Más allá de los números</span></div>
+      <h3 class="section-title" style="font-size:clamp(1.4rem,3vw,1.9rem)">Análisis cultural</h3>
+      <p class="section-sub">Qué nos dicen estos datos sobre cómo y por qué ve cine esta audiencia.</p>
+
+      <details class="acc" open>
+        <summary><span class="n">01</span> Una audiencia joven y digital</summary>
+        <div class="ab">El análisis se basa en los gustos y hábitos de consumo de las personas encuestadas. La muestra está formada principalmente por personas jóvenes, por lo que los resultados reflejan los intereses de una generación acostumbrada al consumo digital y a las plataformas de streaming.</div>
+      </details>
+
+      <details class="acc">
+        <summary><span class="n">02</span> El cine salió de la sala</summary>
+        <div class="ab">El cine y las series ya no se consumen únicamente en salas, sino principalmente desde plataformas digitales. Las más mencionadas fueron Netflix, HBO Max y Prime Video, lo que muestra que el entretenimiento audiovisual forma parte de la vida cotidiana. Además, muchas personas ven contenido varias veces por semana o incluso a diario, por lo que el cine funciona como una actividad frecuente de descanso, convivencia y entretenimiento personal.</div>
+      </details>
+
+      <details class="acc">
+        <summary><span class="n">03</span> Géneros: entre emoción y reflexión</summary>
+        <div class="ab">Los géneros más repetidos fueron drama, ciencia ficción/fantasía, acción/aventura, comedia y animación. Esto muestra que la audiencia busca una mezcla entre entretenimiento, emoción y reflexión. El drama permite conectar con conflictos humanos; la ciencia ficción y la fantasía permiten imaginar otros mundos o futuros; la acción y la aventura ofrecen escape y emoción; mientras que la comedia y la animación muestran que también hay una búsqueda de contenido ligero, familiar o nostálgico.</div>
+      </details>
+
+      <details class="acc">
+        <summary><span class="n">04</span> Tensión con trasfondo: terror y crimen</summary>
+        <div class="ab">Los géneros de terror/suspenso y crimen/thriller aparecen con frecuencia, aunque no son los más dominantes. Esto puede interpretarse como un interés cultural por historias que generan tensión, misterio o crítica social. Muchas películas actuales usan estos géneros para hablar de temas más profundos, como el miedo, la violencia, la inseguridad, la salud mental o la desconfianza hacia otras personas.</div>
+      </details>
+
+      <details class="acc">
+        <summary><span class="n">05</span> Las películas que más conectaron</summary>
+        <div class="ab">A partir de las calificaciones de las 30 películas, algunas tuvieron mejor recepción que otras. Las de mejores promedios fueron Spider-Man: Into the Spider-Verse, Interstellar, Up, Avatar y WALL-E. Esto indica que la muestra no solo prefiere ciertos géneros, sino también películas que conectan mejor con sus intereses culturales, emocionales o visuales: combinan mundos imaginativos, emociones claras, mensajes humanos y elementos visuales atractivos.</div>
+      </details>
+
+      <details class="acc">
+        <summary><span class="n">06</span> Las que conectaron menos</summary>
+        <div class="ab">Las películas con promedios más bajos pueden representar contenidos menos conocidos, menos cercanos al gusto de la muestra o menos atractivos para este grupo de edad. Esto no significa que sean malas películas, sino que probablemente no conectan tanto con los intereses principales del público encuestado.</div>
+      </details>
+
+      <details class="acc">
+        <summary><span class="n">07</span> Qué significa para un recomendador</summary>
+        <div class="ab">El consumo de películas está muy relacionado con la cultura digital actual. Las personas jóvenes no solo ven películas por entretenimiento, sino también para identificarse con historias, emociones, personajes y temas sociales. Por eso, un sistema de recomendación debe tomar en cuenta no solo las calificaciones, sino también factores culturales como la edad, los géneros favoritos, la frecuencia de consumo y la plataforma que usa cada persona.</div>
+      </details>
+
+      <div class="analysis-concl">
+        <div class="lab">En conclusión</div>
+        <p>Los resultados muestran una audiencia joven, digital y diversa en gustos, que combina el interés por películas entretenidas con historias que también pueden tener contenido emocional, social o reflexivo. El cine en streaming no solo es una forma de pasar el tiempo: es una parte importante de la cultura contemporánea.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
 
   <!-- ¿CÓMO FUNCIONA? -->
   <section class="how" aria-label="Cómo funciona">
@@ -216,37 +304,20 @@ footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--l
 
   <div class="divider"></div>
 
-  <!-- RESULTADOS DE LA ENCUESTA -->
-  <section aria-label="Resultados de la encuesta">
-    <div class="shead"><span class="kicker">La voz del equipo</span></div>
-    <h2 class="section-title">Resultados de la encuesta</h2>
-    <p class="section-sub">Esto es lo que opinaron <b id="nResp">—</b> personas que calificaron las 30 películas del catálogo y compartieron sus hábitos de streaming.</p>
-    <div class="stats" id="stats"></div>
-    <div class="charts">
-      <div class="chartbox wide"><h4>Las mejor valoradas por el equipo</h4><div class="csub">Promedio de quienes sí la vieron (mín. 5 votos)</div><div class="cwrap tall"><canvas id="chTop"></canvas></div></div>
-      <div class="chartbox"><h4>Géneros favoritos</h4><div class="csub">Menciones entre los participantes</div><div class="cwrap"><canvas id="chGen"></canvas></div></div>
-      <div class="chartbox"><h4>Plataformas favoritas</h4><div class="csub">Dónde ven streaming</div><div class="cwrap"><canvas id="chPlat"></canvas></div></div>
-      <div class="chartbox"><h4>Edad de los participantes</h4><div class="csub">Distribución por rango</div><div class="cwrap"><canvas id="chAge"></canvas></div></div>
-      <div class="chartbox"><h4>Frecuencia de streaming</h4><div class="csub">Con qué asiduidad ven contenido</div><div class="cwrap"><canvas id="chFreq"></canvas></div></div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
   <!-- RECOMENDACIONES POR PARTICIPANTE -->
   <section aria-label="Recomendaciones para participantes">
-    <div class="shead"><span class="kicker">Solo para participantes</span></div>
-    <h2 class="section-title">Tus recomendaciones personalizadas</h2>
-    <p class="section-sub">¿Respondiste la encuesta? Elige tu número de participante. Usamos tus calificaciones para encontrar personas con gustos parecidos y sugerirte lo que a ellas les encantó y tú aún no has visto, además de descubrimientos de nuestro catálogo de 200.</p>
+    <div class="shead"><span class="kicker">Cómo personaliza</span></div>
+    <h2 class="section-title">Recomendaciones a la medida</h2>
+    <p class="section-sub">Con las respuestas de esas 26 personas, el sistema descubre a quién se parece cada quien y le sugiere lo que aún no ha visto. Elige a una persona y míralo en acción.</p>
     <div class="resp-pick">
-      <label for="respSel">Soy el participante</label>
-      <select id="respSel"><option value="">— elige tu número —</option></select>
+      <label for="respSel">Ver recomendaciones para</label>
+      <select id="respSel"><option value="">— elige una persona —</option></select>
     </div>
     <div id="respOut"></div>
   </section>
 
   <footer>
-    Sala 200 — recomendador sobre una selección de 200 películas (datos de IMDb) y una encuesta interna de 26 participantes. Pensado para alojarse en <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>.
+    Sala 200 — recomendador sobre una selección de 200 películas (datos de IMDb) y una encuesta a 26 personas sobre 30 títulos. Publicado con <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>.
   </footer>
 </div>
 
@@ -304,23 +375,23 @@ function card(m,i,info){
 }
 const grid=document.getElementById("grid");
 function paint(list,withScore,target){const el=target||grid;el.innerHTML=list.length?list.map((o,i)=>card(o.m,i,withScore?o:null)).join(""):`<div class="empty" style="grid-column:1/-1">Ninguna película cumple esos criterios. Prueba a bajar la puntuación mínima o ampliar los géneros.</div>`;}
-function recommend(){document.getElementById("search").value="";
+function recommend(scroll){document.getElementById("search").value="";
   const pool=MOVIES.filter(m=>m.imdb>=state.rating);
   const scored=pool.map(m=>({m,...score(m)})).sort((a,b)=>b.pct-a.pct||b.m.imdb-a.m.imdb||a.m.rank-b.m.rank).slice(0,9);
   document.getElementById("rTitle").textContent=(state.genres.size||state.era!=="any"||state.dur!=="any")?"Elegidas para ti":"Lo más destacado de la selección";
   document.getElementById("rCount").innerHTML=`Mostrando <b>${scored.length}</b> de ${pool.length} compatibles`;
-  paint(scored,true);document.querySelector(".results-head").scrollIntoView({behavior:"smooth",block:"start"});}
+  paint(scored,true);if(scroll!==false)document.querySelector(".results-head").scrollIntoView({behavior:"smooth",block:"start"});}
 function surprise(){document.getElementById("search").value="";
   const pick=MOVIES.filter(m=>m.imdb>=7.5).sort(()=>Math.random()-.5).slice(0,3).map(m=>({m}));
   document.getElementById("rTitle").textContent="🎬 Tres apuestas al azar";document.getElementById("rCount").innerHTML="Refresca para nuevas sugerencias";
   paint(pick,false);document.querySelector(".results-head").scrollIntoView({behavior:"smooth",block:"start"});}
-function doSearch(q){q=q.trim().toLowerCase();if(!q){recommend();return;}
+function doSearch(q){q=q.trim().toLowerCase();if(!q){recommend(false);return;}
   const list=MOVIES.filter(m=>(m.title+" "+m.director+" "+m.cast).toLowerCase().includes(q)).sort((a,b)=>b.imdb-a.imdb).slice(0,12).map(m=>({m}));
   document.getElementById("rTitle").textContent=`Resultados para “${q}”`;document.getElementById("rCount").innerHTML=`<b>${list.length}</b> coincidencia(s)`;paint(list,false);}
 document.getElementById("go").onclick=recommend;
 document.getElementById("surprise").onclick=surprise;
 let tmr;document.getElementById("search").oninput=e=>{clearTimeout(tmr);tmr=setTimeout(()=>doSearch(e.target.value),220);};
-recommend();
+recommend(false);
 
 /* ===================== ENCUESTA: AGREGADOS + GRÁFICAS ===================== */
 const N=RESP.length;
@@ -337,7 +408,7 @@ const genFav=countMulti("gfav"),platFav=countMulti("plat"),ageDist=countSingle("
 // tarjetas resumen
 const pctFreq=Math.round(100*RESP.filter(r=>r.freq==="Diario"||r.freq==="Varias veces por semana").length/N);
 document.getElementById("stats").innerHTML=[
-  {v:N,k:"Participantes"},
+  {v:N,k:"Personas encuestadas"},
   {v:topKey(ageDist),k:"Rango de edad predominante"},
   {v:topKey(platFav),k:"Plataforma más popular"},
   {v:pctFreq+"%",k:"Ve streaming varias veces/semana o más"},
@@ -372,7 +443,7 @@ if(window.Chart){
 
 /* ===================== RECOMENDACIÓN POR PARTICIPANTE ===================== */
 const respSel=document.getElementById("respSel");
-RESP.slice().sort((a,b)=>a.id-b.id).forEach(r=>{const o=document.createElement("option");o.value=r.id;o.textContent="#"+r.id;respSel.appendChild(o);});
+RESP.slice().sort((a,b)=>a.id-b.id).forEach(r=>{const o=document.createElement("option");o.value=r.id;o.textContent="Persona "+r.id;respSel.appendChild(o);});
 const catByN=Object.fromEntries(CATALOG.map(c=>[c.n,c]));
 const normT=t=>t.toLowerCase().split("(")[0].trim();
 
@@ -420,20 +491,20 @@ function renderResp(id){
     user.plat.length?`<span class="pchip">${user.plat.join(" · ")}</span>`:"",
   ].join("");
   const favHTML=fav.length?`<div class="profile">${fav.slice(0,6).map(c=>`<span class="pchip"><b>★${user.r[c.n]}</b> ${c.title}</span>`).join("")}</div>`:`<p class="block-sub">No marcó películas con calificación alta.</p>`;
-  const peersHTML=peers.length?`<div class="peers">${peers.map(p=>`<span class="peer">#${p.v.id} · ${Math.round(p.sim*100)}% afín</span>`).join("")}</div>`:`<p class="note">Aún no hay suficientes coincidencias para encontrar participantes afines.</p>`;
-  const cfHTML=recs.length?`<div class="cflist">${recs.map(x=>`<div class="cfrow"><div class="pred">${x.pred.toFixed(1)}<small>previsto</small></div><div><div class="ct">${x.c.title}${x.c.year?` <span style="color:var(--faint);font-weight:400">(${x.c.year})</span>`:""}</div><div class="cm">${x.c.gES.join(" · ")}</div><div class="why">A ${x.support} participantes afines les gustó</div></div></div>`).join("")}</div>`:`<p class="note">Calificaste casi todo el catálogo: no quedan títulos del catálogo por sugerirte. Mira las recomendaciones de abajo.</p>`;
+  const peersHTML=peers.length?`<div class="peers">${peers.map(p=>`<span class="peer">Persona ${p.v.id} · ${Math.round(p.sim*100)}% afín</span>`).join("")}</div>`:`<p class="note">Aún no hay suficientes coincidencias para encontrar personas afines.</p>`;
+  const cfHTML=recs.length?`<div class="cflist">${recs.map(x=>`<div class="cfrow"><div class="pred">${x.pred.toFixed(1)}<small>previsto</small></div><div><div class="ct">${x.c.title}${x.c.year?` <span style="color:var(--faint);font-weight:400">(${x.c.year})</span>`:""}</div><div class="cm">${x.c.gES.join(" · ")}</div><div class="why">A ${x.support} personas afines les gustó</div></div></div>`).join("")}</div>`:`<p class="note">Esta persona calificó casi todo el catálogo: no quedan títulos por sugerir. Mira las recomendaciones de abajo.</p>`;
   out.innerHTML=`
     <div class="profile">${profile||'<span class="pchip">Sin datos de perfil</span>'}</div>
-    <div class="block-title">Lo que más te gustó</div>
+    <div class="block-title">Lo que más le gustó</div>
     ${favHTML}
-    <div class="block-title">Participantes con gustos como el tuyo</div>
-    <div class="block-sub">Calculado con tus calificaciones (similitud del coseno).</div>
+    <div class="block-title">Personas con gustos parecidos</div>
+    <div class="block-sub">Calculado con sus calificaciones (similitud del coseno).</div>
     ${peersHTML}
-    <div class="block-title">Del catálogo: lo que les encantó a ellos y tú no has visto</div>
+    <div class="block-title">Del catálogo: lo que aman las personas afines y esta persona no ha visto</div>
     <div class="block-sub">Filtrado colaborativo · calificación prevista de 0 a 5.</div>
     ${cfHTML}
-    <div class="block-title">Más para ti en el catálogo de 200</div>
-    <div class="block-sub">Descubrimientos según tus géneros favoritos.</div>
+    <div class="block-title">Más para esta persona en el catálogo de 200</div>
+    <div class="block-sub">Descubrimientos según sus géneros favoritos.</div>
     <div class="grid" id="respGrid"></div>`;
   paint(db,true,document.getElementById("respGrid"));
 }
